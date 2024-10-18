@@ -24,7 +24,7 @@ struct datos {
 void asignar_memoria(FILE **fp);
 struct datos* asignar_valores(FILE *fp, int *num_focos);
 void mostrar(const struct datos *focos, int num_focos);
-
+void mostrar_focos_por_provincia(const struct datos *focos, int num_focos);
 
 
 int main() {
@@ -61,6 +61,10 @@ int main() {
 			break;
 		case 'b':
 		case 'B':
+			asignar_memoria(&fp);
+			focos = asignar_valores(fp, &num_focos);
+			fclose(fp);
+			mostrar_focos_por_provincia(focos, num_focos);
 			printf("\n--------------------------------------------------------------------\n");
 			
 			break;
@@ -147,7 +151,13 @@ void mostrar(const struct datos *focos, int num_focos) {
 		printf("%-12d|\t%-20s|\t%-12.2f|\n", focos[i].provincia_id, focos[i].nombre_provincia, focos[i].sup_afectadas);
 	}
 }
-
+void mostrar_focos_por_provincia(const struct datos *focos, int num_focos) {
+	printf("Provincia ID\tNombre Provincia\tCantidad de Focos\n");
+	printf("--------------------------------------------------------\n");
+	for (int i = 0; i < num_focos; i++) {
+		printf("%-12d|\t%-20s|\t%-12d|\n", focos[i].provincia_id, focos[i].nombre_provincia, focos[i].cant_focos);
+	}
+}
 
 
 
