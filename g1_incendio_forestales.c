@@ -19,8 +19,7 @@ int main() {
 	
 	
 	do {
-		printf("\n--------------------------------------------------------------------\n");
-		printf("\nBienvenido/a al dataset oficial de incendios en Argentina:\n");
+		printf("Bienvenido/a al dataset oficial de incendios en Argentina:\n");
 		printf("\n¿Qué desea investigar hoy?:\n");
 		printf("a. Cantidad de superficie afectada por provincia \n");
 		printf("b. Cantidad de focos de incendio por provincia \n");
@@ -36,29 +35,27 @@ int main() {
 		case 'A':
 			focos = asignar_valores(&num_focos);
 			mostrar(focos, num_focos);
-			printf("\n--------------------------------------------------------------------\n");
-			
+			printf("--------------------------------------------------------\n\n");
 			break;
 		case 'b':
 		case 'B':
 			focos = asignar_valores(&num_focos);
 			mostrar_focos_por_provincia(focos, num_focos);
-			printf("\n--------------------------------------------------------------------\n");
-			
+			printf("--------------------------------------------------------\n\n");
 			break;
 		case 'c':
 		case 'C':
-			printf("\n--------------------------------------------------------------------\n");
-			
+			focos = asignar_valores(&num_focos);
+			top3_incendios_por_hectareas(focos, num_focos);
+			printf("--------------------------------------------------------\n\n");
 			break;
 		case 'd':
 		case 'D':
-			printf("\n--------------------------------------------------------------------\n");
-			
+			printf("--------------------------------------------------------\n\n");
 			break;	
 		case 's':
 		case 'S':
-			printf("\n--------------------------------------------------------------------\n");
+			printf("--------------------------------------------------------\n\n");
 			printf("Fin del programa.\n");
 			break;
 		default:

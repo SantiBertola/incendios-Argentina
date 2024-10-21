@@ -20,6 +20,7 @@ void asignar_memoria(FILE **fp);
 struct datos* asignar_valores(int *num_focos);
 void mostrar(const struct datos *focos, int num_focos);
 void mostrar_focos_por_provincia(const struct datos *focos, int num_focos);
+void top3_incendios_por_hectareas(const struct datos *focos, int num_focos);
 
 
 #endif
@@ -81,7 +82,7 @@ struct datos* asignar_valores(int *num_focos) {
 
 void mostrar(const struct datos *focos, int num_focos) {
 	printf("Provincia ID\tNombre Provincia\tSup Afectada\n");
-	printf("-----------------------------------------------------\n");
+	printf("--------------------------------------------------------\n");
 	for (int i = 0; i < num_focos; i++) {
 		printf("%-12d|\t%-20s|\t%-12.2f|\n", focos[i].provincia_id, focos[i].nombre_provincia, focos[i].sup_afectadas);
 	}
@@ -92,5 +93,31 @@ void mostrar_focos_por_provincia(const struct datos *focos, int num_focos) {
 	printf("--------------------------------------------------------\n");
 	for (int i = 0; i < num_focos; i++) {
 		printf("%-12d|\t%-20s|\t%-12d|\n", focos[i].provincia_id, focos[i].nombre_provincia, focos[i].cant_focos);
+	}
+}
+
+void top3_incendios_por_hectareas(const struct datos *focos, int num_focos) {
+	struct datos focos_copia[num_focos];
+	for (int i = 0; i < num_focos; i++) {
+		focos_copia[i] = focos[i];
+	}
+	
+	for (int i = 0; i < num_focos - 1; i++) {
+		for (int j = 0; j < num_focos - i - 1; j++) {
+			if (focos_copia[j].sup_afectadas < focos_copia[j + 1].sup_afectadas) {
+				struct datos temp = focos_copia[j];
+				focos_copia[j] = focos_copia[j + 1];
+				focos_copia[j + 1] = temp;
+			}
+		}
+	}
+	
+	printf("Provincia ID\tNombre Provincia\tSuperficie Afectada\n");
+	printf("--------------------------------------------------------\n");
+	for (int i = 0; i < 3 && i < num_focos; i++) {
+		printf("%-12d|\t%-20s|\t%-12.2f|\n", 
+			   focos_copia[i].provincia_id, 
+			   focos_copia[i].nombre_provincia, 
+			   focos_copia[i].sup_afectadas);
 	}
 }
