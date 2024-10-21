@@ -1,9 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#ifndef FUNCIONES_H
-#define FUNCIONES_H
+#ifndef PRUEBA_H
+#define PRUEBA_H
 
-struct datos {
+struct datos
+{
 	int pais_id;
 	char pais[100];
 	int provincia_id;
@@ -16,108 +19,223 @@ struct datos {
 	int anio;
 };
 
-void asignar_memoria(FILE **fp);
-struct datos* asignar_valores(int *num_focos);
-void mostrar(const struct datos *focos, int num_focos);
-void mostrar_focos_por_provincia(const struct datos *focos, int num_focos);
-void top3_incendios_por_hectareas(const struct datos *focos, int num_focos);
+struct provincia
+{
+	int provincia_id;
+	char nombre_provincia[100];
+	float total_sup_afectadas;
+	int total_focos;
+};
 
+void asignar_memoria(FILE **fp);
+struct datos *asignar_valores(int *cant_cargas);
+struct provincia *agrupar_por_provincia(struct datos *carga, int cant_cargas, int *cant_provincias);
+void cant_supAfectada_por_provincia(struct provincia *provincias, int cant_provincias);
+void cant_focos_por_provincia(struct provincia *provincias, int cant_provincias);
+void top3_prov_mas_afectadas_por_cant_ha(struct provincia *provincias, int cant_provincias);
+void intercambiar(struct provincia *a, struct provincia *b);
+void ordenar_por_hectareas(struct provincia *provincias, int cant_provincias);
+void ordenar_por_focos(struct provincia *provincias, int cant_provincias);
+void top_3_hectareas(struct provincia *provincias, int cant_provincias);
+void top_3_focos(struct provincia *provincias, int cant_provincias);
 
 #endif
 
-void asignar_memoria(FILE **fp) {
+void asignar_memoria(FILE **fp)
+{
 	*fp = fopen("focos.csv", "r");
-	if (*fp == NULL) {
+	if (*fp == NULL)
+	{
 		perror("Imposible abrir el archivo");
 		exit(EXIT_FAILURE);
 	}
 }
 
-struct datos* asignar_valores(int *num_focos) {
+struct datos *asignar_valores(int *cant_cargas)
+{
 	FILE *fp = NULL;
-	
 	asignar_memoria(&fp);
 	
 	char linea[200];
-	int tamano = 10;
-	struct datos *focos = malloc(tamano * sizeof(struct datos));
-	if (focos == NULL) {
+	*cant_cargas = 0;
+	
+	// Contar cuántas líneas (datos) hay en el archivo
+	while (fgets(linea, sizeof(linea), fp))
+	{
+		(*cant_cargas)++;
+	}
+	
+	// Asignar la memoria exacta
+	struct datos *carga = malloc((*cant_cargas) * sizeof(struct datos));
+	if (carga == NULL)
+	{
 		perror("Error al asignar memoria");
 		exit(EXIT_FAILURE);
 	}
 	
-	*num_focos = 0;
+	// Volver al inicio del archivo para leer los datos
+	rewind(fp);
 	
-	fgets(linea, sizeof(linea), fp);
-	
-	while (fgets(linea, sizeof(linea), fp)) {
-		if (*num_focos >= tamano) {
-			tamano *= 2;
-			struct datos *temp = realloc(focos, tamano * sizeof(struct datos));
-			if (temp == NULL) {
-				perror("Error al reasignar memoria");
-				free(focos);
-				exit(EXIT_FAILURE);
+	int index = 0;
+	while (fgets(linea, sizeof(linea), fp))
+	{
+		// Reemplazar coma por punto para decimales
+		for (int i = 0; linea[i] != '\0'; i++)
+		{
+			if (linea[i] == ',')
+			{
+				linea[i] = '.';
 			}
-			focos = temp;
 		}
 		sscanf(linea, "%d;%99[^;];%d;%99[^;];%d;%99[^;];%f;%9[^;];%d;%d",
-			   &focos[*num_focos].pais_id,
-			   focos[*num_focos].pais,
-			   &focos[*num_focos].provincia_id,
-			   focos[*num_focos].nombre_provincia,
-			   &focos[*num_focos].dpto_id,
-			   focos[*num_focos].nombre_dpto,
-			   &focos[*num_focos].sup_afectadas,
-			   focos[*num_focos].unidad_medida,
-			   &focos[*num_focos].cant_focos,
-			   &focos[*num_focos].anio);
-		(*num_focos)++;
+			   &carga[index].pais_id,
+			   carga[index].pais,
+			   &carga[index].provincia_id,
+			   carga[index].nombre_provincia,
+			   &carga[index].dpto_id,
+			   carga[index].nombre_dpto,
+			   &carga[index].sup_afectadas,
+			   carga[index].unidad_medida,
+			   &carga[index].cant_focos,
+			   &carga[index].anio);
+		index++;
 	}
 	
 	fclose(fp);
-	
-	return focos;
+	return carga;
 }
 
-void mostrar(const struct datos *focos, int num_focos) {
-	printf("Provincia ID\tNombre Provincia\tSup Afectada\n");
-	printf("--------------------------------------------------------\n");
-	for (int i = 0; i < num_focos; i++) {
-		printf("%-12d|\t%-20s|\t%-12.2f|\n", focos[i].provincia_id, focos[i].nombre_provincia, focos[i].sup_afectadas);
-	}
-}
-
-void mostrar_focos_por_provincia(const struct datos *focos, int num_focos) {
-	printf("Provincia ID\tNombre Provincia\tCantidad de Focos\n");
-	printf("--------------------------------------------------------\n");
-	for (int i = 0; i < num_focos; i++) {
-		printf("%-12d|\t%-20s|\t%-12d|\n", focos[i].provincia_id, focos[i].nombre_provincia, focos[i].cant_focos);
-	}
-}
-
-void top3_incendios_por_hectareas(const struct datos *focos, int num_focos) {
-	struct datos focos_copia[num_focos];
-	for (int i = 0; i < num_focos; i++) {
-		focos_copia[i] = focos[i];
+struct provincia *agrupar_por_provincia(struct datos *carga, int cant_cargas, int *cant_provincias)
+{
+	struct provincia *provincias = malloc(cant_cargas * sizeof(struct provincia)); // Ajuste: esto podría optimizarse más adelante
+	if (provincias == NULL)
+	{
+		perror("Error al asignar memoria para provincias");
+		exit(EXIT_FAILURE);
 	}
 	
-	for (int i = 0; i < num_focos - 1; i++) {
-		for (int j = 0; j < num_focos - i - 1; j++) {
-			if (focos_copia[j].sup_afectadas < focos_copia[j + 1].sup_afectadas) {
-				struct datos temp = focos_copia[j];
-				focos_copia[j] = focos_copia[j + 1];
-				focos_copia[j + 1] = temp;
+	*cant_provincias = 0;
+	for (int i = 0; i < cant_cargas; i++)
+	{
+		int encontrado = 0;
+		for (int j = 0; j < *cant_provincias; j++)
+		{
+			if (provincias[j].provincia_id == carga[i].provincia_id)
+			{
+				provincias[j].total_sup_afectadas += carga[i].sup_afectadas;
+				provincias[j].total_focos += carga[i].cant_focos;
+				encontrado = 1;
+				break;
+			}
+		}
+		if (!encontrado)
+		{
+			provincias[*cant_provincias].provincia_id = carga[i].provincia_id;
+			strcpy(provincias[*cant_provincias].nombre_provincia, carga[i].nombre_provincia);
+			provincias[*cant_provincias].total_sup_afectadas = carga[i].sup_afectadas;
+			provincias[*cant_provincias].total_focos = carga[i].cant_focos;
+			(*cant_provincias)++;
+		}
+	}
+	return provincias;
+}
+
+void cant_supAfectada_por_provincia(struct provincia *provincias, int cant_provincias)
+{
+	printf("\nCantidad de superficie afectada por provincia:\n");
+	for (int i = 0; i < cant_provincias; i++)
+	{
+		printf("Provincia: %s, Superficie afectada: %.2f ha\n",
+			   provincias[i].nombre_provincia,
+			   provincias[i].total_sup_afectadas);
+	}
+}
+
+void cant_focos_por_provincia(struct provincia *provincias, int cant_provincias)
+{
+	printf("\nCantidad de focos por provincia:\n");
+	for (int i = 0; i < cant_provincias; i++)
+	{
+		printf("Provincia: %s, Cantidad de focos: %d\n",
+			   provincias[i].nombre_provincia,
+			   provincias[i].total_focos);
+	}
+}
+
+// Función para intercambiar dos provincias
+void intercambiar(struct provincia *a, struct provincia *b)
+{
+	struct provincia temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
+// Función para ordenar las provincias por cantidad de hectáreas afectadas
+void ordenar_por_hectareas(struct provincia *provincias, int cant_provincias)
+{
+	for (int i = 0; i < cant_provincias - 1; i++)
+	{
+		for (int j = 0; j < cant_provincias - i - 1; j++)
+		{
+			if (provincias[j].total_sup_afectadas < provincias[j + 1].total_sup_afectadas)
+			{
+				intercambiar(&provincias[j], &provincias[j + 1]);
 			}
 		}
 	}
+}
+
+// Función para ordenar las provincias por cantidad de focos
+void ordenar_por_focos(struct provincia *provincias, int cant_provincias)
+{
+	for (int i = 0; i < cant_provincias - 1; i++)
+	{
+		for (int j = 0; j < cant_provincias - i - 1; j++)
+		{
+			if (provincias[j].total_focos < provincias[j + 1].total_focos)
+			{
+				intercambiar(&provincias[j], &provincias[j + 1]);
+			}
+		}
+	}
+}
+
+// Función para mostrar las 3 provincias más afectadas por cantidad de hectáreas
+void top_3_hectareas(struct provincia *provincias, int cant_provincias)
+{
+	if (cant_provincias < 3)
+	{
+		printf("\nNo hay suficientes provincias para mostrar el top 3.\n");
+		return;
+	}
 	
-	printf("Provincia ID\tNombre Provincia\tSuperficie Afectada\n");
-	printf("--------------------------------------------------------\n");
-	for (int i = 0; i < 3 && i < num_focos; i++) {
-		printf("%-12d|\t%-20s|\t%-12.2f|\n", 
-			   focos_copia[i].provincia_id, 
-			   focos_copia[i].nombre_provincia, 
-			   focos_copia[i].sup_afectadas);
+	ordenar_por_hectareas(provincias, cant_provincias);
+	
+	printf("\nLas 3 provincias m�s afectadas por cantidad de hect�reas afectadas:\n");
+	for (int i = 0; i < 3; i++)
+	{
+		printf("Provincia: %s, Superficie afectada: %.2f ha\n",
+			   provincias[i].nombre_provincia,
+			   provincias[i].total_sup_afectadas);
+	}
+}
+
+// Función para mostrar las 3 provincias más afectadas por cantidad de focos de incendio
+void top_3_focos(struct provincia *provincias, int cant_provincias)
+{
+	if (cant_provincias < 3)
+	{
+		printf("\nNo hay suficientes provincias para mostrar el top 3.\n");
+		return;
+	}
+	
+	ordenar_por_focos(provincias, cant_provincias);
+	
+	printf("\nLas 3 provincias m�s afectadas por cantidad de focos de incendio:\n");
+	for (int i = 0; i < 3; i++)
+	{
+		printf("Provincia: %s, Focos de incendio: %d\n",
+			   provincias[i].nombre_provincia,
+			   provincias[i].total_focos);
 	}
 }
