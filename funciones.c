@@ -59,7 +59,7 @@ struct datos *asignar_valores(int *cant_cargas)
 	char linea[200];
 	*cant_cargas = 0;
 	
-	// Contar cuÃ¡ntas lÃ­neas (datos) hay en el archivo
+	// Contar cuántas líneas (datos) hay en el archivo
 	while (fgets(linea, sizeof(linea), fp))
 	{
 		(*cant_cargas)++;
@@ -107,7 +107,7 @@ struct datos *asignar_valores(int *cant_cargas)
 
 struct provincia *agrupar_por_provincia(struct datos *carga, int cant_cargas, int *cant_provincias)
 {
-	struct provincia *provincias = malloc(cant_cargas * sizeof(struct provincia)); // Ajuste: esto podrÃ­a optimizarse mÃ¡s adelante
+	struct provincia *provincias = malloc(cant_cargas * sizeof(struct provincia)); // Ajuste: esto podría optimizarse más adelante
 	if (provincias == NULL)
 	{
 		perror("Error al asignar memoria para provincias");
@@ -162,7 +162,7 @@ void cant_focos_por_provincia(struct provincia *provincias, int cant_provincias)
 	}
 }
 
-// FunciÃ³n para intercambiar dos provincias
+// Función para intercambiar dos provincias
 void intercambiar(struct provincia *a, struct provincia *b)
 {
 	struct provincia temp = *a;
@@ -170,7 +170,7 @@ void intercambiar(struct provincia *a, struct provincia *b)
 	*b = temp;
 }
 
-// FunciÃ³n para ordenar las provincias por cantidad de hectÃ¡reas afectadas
+// Función para ordenar las provincias por cantidad de hectáreas afectadas
 void ordenar_por_hectareas(struct provincia *provincias, int cant_provincias)
 {
 	for (int i = 0; i < cant_provincias - 1; i++)
@@ -185,7 +185,7 @@ void ordenar_por_hectareas(struct provincia *provincias, int cant_provincias)
 	}
 }
 
-// FunciÃ³n para ordenar las provincias por cantidad de focos
+// Funcián para ordenar las provincias por cantidad de focos
 void ordenar_por_focos(struct provincia *provincias, int cant_provincias)
 {
 	for (int i = 0; i < cant_provincias - 1; i++)
@@ -200,7 +200,7 @@ void ordenar_por_focos(struct provincia *provincias, int cant_provincias)
 	}
 }
 
-// FunciÃ³n para mostrar las 3 provincias mÃ¡s afectadas por cantidad de hectÃ¡reas
+// Función para mostrar las 3 provincias más afectadas por cantidad de hectáreas
 void top_3_hectareas(struct provincia *provincias, int cant_provincias)
 {
 	if (cant_provincias < 3)
@@ -220,7 +220,7 @@ void top_3_hectareas(struct provincia *provincias, int cant_provincias)
 	}
 }
 
-// FunciÃ³n para mostrar las 3 provincias mÃ¡s afectadas por cantidad de focos de incendio
+// Función para mostrar las 3 provincias más afectadas por cantidad de focos de incendio
 void top_3_focos(struct provincia *provincias, int cant_provincias)
 {
 	if (cant_provincias < 3)

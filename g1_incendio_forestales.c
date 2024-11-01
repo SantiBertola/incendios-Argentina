@@ -1,5 +1,5 @@
 /*
-Autores /a: Santino Bertola, Eduardo Ferreyra, Mateo Garcï¿½a, Facundo Gordillo, Nicolas Moran
+Autores /a: Santino Bertola, Eduardo Ferreyra, Mateo García, Facundo Gordillo, Nicolas Moran
 Tema: Incendios en Argentina
 */
 
